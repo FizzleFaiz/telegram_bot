@@ -1,17 +1,21 @@
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
+# Chill Artist and their respective Artist ID
+chill_dict = {
+  "keshi":"spotify:artist:3pc0bOVB5whxmD50W79wwO",
+  "Sasha Sloan":"spotify:artist:4xnihxcoXWK3UqryOSnbw5",
+  "Khalid": "spotify:artist:6LuN9FCkKOj5PcnpouEgny",
+  "Gentle Bones": "spotify:artist:4jGPdu95icCKVF31CcFKbS",
+  "blackbear": "spotify:artist:2cFrymmkijnjDg9SS92EPM"
+}
 
+# 80s Artist and their respective Artist ID
+eight_dict = {
+  "Queen":"spotify:artist:1dfeR4HaWDbWqFHLkxsg1d",
+  "Bon Jovi":"spotify:artist:58lV9VcRSjABbAbfWS6skp"
+}
 
-# birdy_uri = 'spotify:artist:2WX2uTcsvV5OnS0inACecP'
+country_code ={
+  "Singapore" :"SG",
+  "United States": "US"
+}
 
-auth_manager = SpotifyClientCredentials()
-sp = spotipy.Spotify(auth_manager=auth_manager)
-def return_playlist():
-  playlists = sp.user_playlists('spotify')
-  while playlists:
-      for i, playlist in enumerate(playlists['items']):
-          return("%4d %s %s" % (i + 1 + playlists['offset'], playlist['uri'],  playlist['name']))
-      if playlists['next']:
-          playlists = sp.next(playlists)
-      else:
-          playlists = None
+user = '21fvcbefalygwzh3n6df5ykxa'

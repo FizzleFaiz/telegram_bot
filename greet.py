@@ -24,3 +24,7 @@ def greet_random():
     return """How is it going partner? Have you eaten and rest well? Take some breaks if you have to ☺️🙂☺️🙂"""
   elif i == 4:
     return """Everyday can be a good day. Just need to adjust our mentality and attitude. It is how we face the problem that makes all the difference ya.🙌🙌"""
+  elif i == 5:
+    return """ """
+  elif i == 5:
+    return"""༼ つ ͡ ͡° ͜ ʖ ͡ ͡° ༽つ Greetings Kripp, I am Dr. Hannibal Lector, renowned Psychiatrist based in Baltimore, Maryland. I have heard you are the saltiest man alive, I am intrigued by a man of your... tastes. I would like to invite you for... dinner. ༼ つ ͡ ͡° ͜ ʖ ͡ ͡° ༽つ"""
