@@ -7,22 +7,37 @@ import daily as d
 import spotify as s
 import troll as t
 import inspire as i
+import image as img
 ## external modules
 import spotipy
-import requests, json
-from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOAuth
-from telegram import ReplyKeyboardMarkup
+from spotipy.oauth2 import SpotifyClientCredentials
 from telebot import types
-from datetime import datetime
+from simple_scheduler.event import event_scheduler 
+from time import sleep
 import pprint
+import requests
+
+# Chat_id = 533178754 https://api.telegram.org/bot1959228608:AAHFWp9kcR4vcBpII5iwsLnMOkaifU0XKX8/getUpdates
+
+
 # Upon calling this function, TeleBot starts polling the Telegram servers for new messages.
 # - none_stop: True/False (default False) - Don't stop polling when receiving an error from the Telegram servers
 # - interval: True/False (default False) - The interval between polling requests
 #           Note: Editing this parameter harms the bot's response time
 # - timeout: integer (default 20) - Timeout in seconds for long polling.
 # - allowed_updates: List of Strings (default None) - List of update types to request 
+def send_daily():
+  chat_id = '-533178754'
+  d_text = d.schedule_daily()
 
-# getMe
+  data = {
+    'chat_id': chat_id,
+    'text': d_text
+  }
+
+  response = requests.post('https://api.telegram.org/bot1959228608:AAHFWp9kcR4vcBpII5iwsLnMOkaifU0XKX8/sendMessage', data=data)
+
+
 
 API_KEY = os.getenv('API_KEY')
 bot = telebot.TeleBot(API_KEY,parse_mode ="HTML")
@@ -39,9 +54,11 @@ auth_manager = SpotifyClientCredentials(client_id,client_secret)
 #                                                scope="playlist-read-private")
 sp = spotipy.Spotify(auth_manager=auth_manager)
 
+#Init Spotify Search Class object, with defauly value
+sp_s_obj = s.sp_s("track")
 
 # To display commands associated with this bot
-@bot.message_handler(commands=['help'])
+@bot.message_handler(commands=['start','hi','hello','help'])
 def help(message):
     bot.send_message(message.chat.id, 
     """ Hello you have activated the Help function :)
@@ -52,6 +69,7 @@ def help(message):
         /daily - Daily Greetings and Current Weather
         /troll - Display Random Troll Messages
         /inspire - Display Random Inspirational Quotes
+        /image - Display Random Images
         ---------------Spotify---------------
         /sp_a - Spotify Artist Of the Day
         /sp_p - Spotify Featured Playlists
@@ -84,16 +102,16 @@ def inspire(message):
     bot.send_message(message.chat.id, i.random_quote())
 
 # To display random inspirational quotes
-@bot.message_handler(commands=['inspire'])
-def inspire(message):
-    bot.send_message(message.chat.id, i.random_quote())
+@bot.message_handler(commands=['image'])
+def image(message):
+    bot.send_photo(message.chat.id, img.random_image())
 
 # To display Spotify playlist
 @bot.message_handler(commands=['sp_a'])
 def choose_vibe(message):
   try:
         markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
-        markup.add('Chill', '80s')
+        markup.add('Chill', '80s','Mando Pop','Childhood')
         msg = bot.reply_to(message, 'Choose your <b>Vibe</b> for today', reply_markup=markup)
         bot.register_next_step_handler(msg, choose_artist)
   except Exception as e:
@@ -109,6 +127,12 @@ def choose_artist(message):
         elif(vibe == u'80s'):
           for key in s.eight_dict:
             markup.add(key)
+        elif(vibe == u'Mando Pop'):
+          for key in s.mando_dict:
+            markup.add(key)
+        elif(vibe == u'Childhood'):
+          for key in s.child_dict:
+            markup.add(key)
         msg = bot.reply_to(message, 'Choose your <b>Artist</b> of the day', reply_markup=markup)
         bot.register_next_step_handler(msg, show_songs)
   except Exception as e:
@@ -120,6 +144,10 @@ def show_songs(message):
     artist_id = s.chill_dict.get(artist)
   elif artist in s.eight_dict.keys():
     artist_id = s.eight_dict.get(artist)
+  elif artist in s.mando_dict.keys():
+    artist_id = s.mando_dict.get(artist)
+  elif artist in s.child_dict.keys():
+    artist_id = s.child_dict.get(artist)
   results = sp.artist_top_tracks(artist_id)
 
   bot.send_message(message.chat.id, "Showing the Top 10 Songs for <b> "
@@ -160,21 +188,40 @@ def show_playlist(message):
 
 # To search songs based on query
 @bot.message_handler(commands=['sp_s'])
+def choose_search(message):
+  try:
+        markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+        # TODO: More countires soon
+        markup.add('artist', 'album','track','playlist')
+        msg = bot.reply_to(message, 'What do you want to search for?', reply_markup=markup)
+        bot.register_next_step_handler(msg, search)
+  except Exception as e:
+      bot.reply_to(message, 'oooops')
 def search(message):
   try:
-        msg = bot.reply_to(message, 'What do you want to search for?')
+        search_type = message.text
+        sp_s_obj.s_type = search_type
+        msg = bot.reply_to(message, 'Type your search')
         bot.register_next_step_handler(msg, result_search)
   except Exception as e:
       bot.reply_to(message, 'oooops')
 
 def result_search(message):
   search_str = message.text
-  result = sp.search(search_str,limit =1,type="track",market='SG')
-  tracks = result['tracks']
-  track_item = tracks['items']
-  album = track_item[0]
-  spotify_link = album['external_urls']['spotify']
-  bot.send_message(message.chat.id,spotify_link)
+  result = sp.search(search_str,limit =5,type=sp_s_obj.s_type,market='SG')
+  # pprint.pprint(result)
+  bot.send_message(message.chat.id, "<b>Showing Top 5 Results</b>") 
+  if sp_s_obj.s_type == 'artist':
+      tracks = result['artists']
+  elif sp_s_obj.s_type == 'album':
+    tracks = result['albums']
+  elif sp_s_obj.s_type == 'track':
+    tracks = result['tracks']
+  elif sp_s_obj.s_type == 'playlist':
+    tracks = result['playlists']
+  for i, item in enumerate(tracks['items']):
+    link = item['external_urls']['spotify']
+    bot.send_message(message.chat.id, link)  
 
 # To recommend
 @bot.message_handler(commands=['sp_up'])
@@ -190,6 +237,12 @@ def user_playlist(message):
       else:
           playlists = None
 
+event_scheduler.add_job(target= send_daily, 
+                        when = ["*|08:30"], #"*": call function everyday
+                        tz = "Asia/Singapore")
+event_scheduler.run()
+
+sleep(5)
 
 bot.polling()
 

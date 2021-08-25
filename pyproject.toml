@@ -11,7 +11,8 @@ pyTelegramBotAPI = "^3.8.3"
 pytz = "^2021.1"
 spotipy = "^2.19.0"
 python-telegram-bot = "^13.7"
-schedule = "^1.1.0"
+arrow = "^1.1.1"
+simple-scheduler = "^1.1.11"
 
 [tool.poetry.dev-dependencies]
 
