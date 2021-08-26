@@ -8,6 +8,7 @@ import spotify as s
 import troll as t
 import inspire as i
 import image as img
+import meme as m
 ## external modules
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -35,8 +36,12 @@ def send_daily():
     'chat_id': chat_id,
     'text': d_text
   }
-
-  response = requests.post('https://api.telegram.org/bot1959228608:AAHFWp9kcR4vcBpII5iwsLnMOkaifU0XKX8/sendMessage', data=data)
+  # Post Daily
+  requests.post('https://api.telegram.org/bot1959228608:AAHFWp9kcR4vcBpII5iwsLnMOkaifU0XKX8/sendMessage', data=data)
+  # Random Meme After
+  url = m.random_meme()
+  files = {'media': open('test.jpg', 'rb')}
+  requests.post(url, files=files)
 
 
 
@@ -71,6 +76,7 @@ def help(message):
         /troll - Display Random Troll Messages
         /inspire - Display Random Inspirational Quotes
         /image - Display Random Images
+        /meme - Display Random Meme
         ---------------Spotify---------------
         /sp_a - Spotify Artist Of the Day
         /sp_p - Spotify Featured Playlists
@@ -106,6 +112,11 @@ def inspire(message):
 @bot.message_handler(commands=['image'])
 def image(message):
     bot.send_photo(message.chat.id, img.random_image())
+
+# To display random memes
+@bot.message_handler(commands=['meme'])
+def image(message):
+    bot.send_photo(message.chat.id, m.random_meme())
 
 # To display Spotify playlist
 @bot.message_handler(commands=['sp_a'])
