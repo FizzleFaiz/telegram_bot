@@ -9,6 +9,7 @@ import troll as t
 import inspire as i
 import image as img
 import meme as m
+import joke as j
 ## external modules
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
@@ -31,17 +32,21 @@ def send_daily():
   #Daily Bot
   chat_id = '-533178754'
   d_text = d.schedule_daily()
+  t_chat = "https://api.telegram.org/bot1959228608:AAHFWp9kcR4vcBpII5iwsLnMOkaifU0XKX8/sendMessage"
 
   data = {
     'chat_id': chat_id,
     'text': d_text
   }
   # Post Daily
-  requests.post('https://api.telegram.org/bot1959228608:AAHFWp9kcR4vcBpII5iwsLnMOkaifU0XKX8/sendMessage', data=data)
+  requests.post(t_chat, data=data)
   # Random Meme After
   url = m.random_meme()
-  files = {'media': open('test.jpg', 'rb')}
-  requests.post(url, files=files)
+  f_data = {
+    'chat_id': chat_id,
+    'text': url
+  } 
+  requests.post(t_chat,data = f_data)
 
 
 
@@ -60,7 +65,7 @@ auth_manager = SpotifyClientCredentials(client_id,client_secret)
 #                                                scope="playlist-read-private")
 sp = spotipy.Spotify(auth_manager=auth_manager)
 
-#Init Spotify Search Class object, with defauly value
+#Init Spotify Search Class object, with default value
 sp_s_obj = s.sp_s("track")
 
 # To display commands associated with this bot
@@ -72,7 +77,7 @@ def help(message):
         /help - Display this message duh
         /greet - Display random greetings
         /forecast - 3 Hour Weather Forecast for Singapore
-        /daily - Daily Greetings and Current Weather
+        /joke - Display Joke
         /troll - Display Random Troll Messages
         /inspire - Display Random Inspirational Quotes
         /image - Display Random Images
@@ -93,10 +98,28 @@ def greet(message):
 def forecast(message):
     bot.send_message(message.chat.id, w.weather_get())
 
+# # To display current weather and random greeting
+# @bot.message_handler(commands=['daily'])
+# def daily(message):
+#     bot.send_message(message.chat.id, d.daily(message.from_user.first_name))
+
 # To display current weather and random greeting
-@bot.message_handler(commands=['daily'])
-def daily(message):
-    bot.send_message(message.chat.id, d.daily(message.from_user.first_name))
+@bot.message_handler(commands=['joke'])
+def choose_joke_type(message):
+  try:
+      markup = types.ReplyKeyboardMarkup(one_time_keyboard=True)
+      markup.add('Single', 'Two Part','Random')
+      msg = bot.reply_to(message, 'Choose your <b>Joke Type</b>', reply_markup=markup)
+      bot.register_next_step_handler(msg, show_joke)
+  except Exception as e:
+        bot.reply_to(message, 'oooops')
+
+def show_joke(message):
+  j_type = message.text
+  bot.send_message(message.chat.id, j.random_joke(j_type))
+
+
+
 
 # To display random troll
 @bot.message_handler(commands=['troll'])
@@ -250,7 +273,7 @@ def user_playlist(message):
           playlists = None
 # Scheduler event 
 event_scheduler.add_job(target= send_daily, 
-                        when = ["*|08:30"], #"*": call function everyday
+                        when = ["*|08:30"], #"*": call function everyday HH:MM
                         tz = "Asia/Singapore")
 event_scheduler.run()
 
