@@ -27,6 +27,7 @@ import requests
 # - timeout: integer (default 20) - Timeout in seconds for long polling.
 # - allowed_updates: List of Strings (default None) - List of update types to request 
 def send_daily():
+  #Daily Bot
   chat_id = '-533178754'
   d_text = d.schedule_daily()
 
@@ -236,7 +237,7 @@ def user_playlist(message):
           playlists = sp.next(playlists)
       else:
           playlists = None
-
+# Scheduler event 
 event_scheduler.add_job(target= send_daily, 
                         when = ["*|08:30"], #"*": call function everyday
                         tz = "Asia/Singapore")

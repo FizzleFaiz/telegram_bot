@@ -23,16 +23,17 @@ cnt = "1"
 # complete url address
 complete_url = base_url + "appid=" + api_key + "&q=" + city_name + "&units=" + units + "&cnt=" + cnt
 
-# get method of requests module
-# return response object
-response = requests.get(complete_url)
 
-# json method of response object
-# convert json format data into
-# python format data
-x = response.json()
 
 def weather_get():
+    # get method of requests module
+    # return response object
+    response = requests.get(complete_url)
+
+    # json method of response object
+    # convert json format data into
+    # python format data
+    x = response.json()
     temp_list = x["list"]
     fore_y = temp_list[0]["main"]
 
